@@ -334,6 +334,7 @@ dependencies = [
 name = "hey-yew-guys"
 version = "0.1.0"
 dependencies = [
+ "js-sys",
  "log",
  "wasm-bindgen",
  "wasm-logger",
