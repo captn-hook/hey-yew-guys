@@ -2,118 +2,126 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use yew::prelude::*;
-use web_sys::{window, HtmlCanvasElement, WebGlRenderingContext as GL, MouseEvent};
-use yew::{html, Component, Context, Html, NodeRef};
+use web_sys::{ window, HtmlCanvasElement, WebGlRenderingContext as GL, MouseEvent };
+use yew::{ html, Component, Context, Html, NodeRef };
 use wasm_bindgen::JsCast;
 use wasm_bindgen::closure::Closure;
 
-#[derive(Debug)]
+//grid size is the number of particles in each dimension
+const GRID_SIZE: usize = 100;
+
+//imp std::marker::Copy for Particle {}
+#[derive(Copy, Clone)]
 pub struct Particle {
-    position: (f32, f32),
-    velocity: (f32, f32),
+    size: u32,
+    id: u32,
+    position: (u32, u32),
+    force: (f32, f32),
     mass: f32,
 }
 
-fn psuedo_rand() -> f32 {
-    //get a digit of pi from the current time
-    let pi = std::f32::consts::PI;
-    let time = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-    let digit = (time % 10) as f32;
-    //return the digit as a float between 0 and 1
-    digit / 10.0
+impl PartialEq for Particle {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
 }
 
+//particles are event driven, and get their pos from the sim grid
 impl Particle {
-    //default particle to x,y, 0,0, 0,0, 1
-    pub fn new(x: f32, y: f32) -> Self {
+    //new particle takes a counter and a size to determine id on grid
+    //and some physics constants
+    pub fn new(size: u32) -> Self {
         Particle {
-            position: (x, y),
-            velocity: (0.0, 0.0),
-            mass: 1.0,
+            size: size,
+            position: (0, 0),
+            id: 0,
+            force: (0.0, 0.0),
+            mass: 1.0, //negative mass is upward force
+            //eventually i want to subclass particle into different types with interactions
         }
     }
 
-    //custom particle
-    pub fn create(x: f32, y: f32, vx: f32, vy: f32, m: f32) -> Self {
+    pub fn copy(part: &Particle, new_pos: (u32, u32)) -> Self {
         Particle {
-            position: (x, y),
-            velocity: (vx, vy),
-            mass: m,
+            size: part.size,
+            position: new_pos,
+            id: part.id,
+            force: part.force,
+            mass: part.mass,
         }
     }
 
-    //fun spawn
-    pub fn spawn(x: f32, y: f32) -> Self {
-        let vx = psuedo_rand() * 2.0 - 1.0;
-        let vy = psuedo_rand() * 2.0 - 1.0;
-        Particle {
-            position: (x, y),
-            velocity: (vx, vy),
-            mass: 1.0,
-        }
-    }
-
-    //format particle
-    pub fn format(&self) -> String {
-        format!(
-            "Particle: position: ({}, {}), velocity: ({}, {}), mass: {}",
-            self.position.0, self.position.1, self.velocity.0, self.velocity.1, self.mass
-        )
+    // :[ 
+    pub fn init_part(&mut self, counter: u32) {
+        self.id = counter;
+        self.position = ((self.id % self.size) as u32, (self.id / self.size) as u32);
     }
 }
-
-pub struct Simulation {
-    size: (u32, u32),
-    particles: Vec<Particle>,
+   
+pub struct Simulation<'a> {
+    //simulation defines a size and some physics constants
+    //particle refrences are stored in a grid
+    particles: [[&'a mut Particle; GRID_SIZE]; GRID_SIZE],
     gravity: f32,
+    time_step: u32,
+    loopx: bool,
+    loopy: bool,
 }
 
-impl Simulation {
-    pub fn new(size: (u32, u32)) -> Self {
-        let particles = vec![
-            Particle::create(0.0, 1.0, 0.0, -1.0, 1.0),
-            Particle::create(0.0, -1.0, 0.0, 1.0, 1.0),
-            Particle::create(1.0, 0.0, -1.0, 0.0, 1.0),            
-        ];
+impl Simulation<'_> {
+    pub fn new(gravity: f32, time_step: u32, loopx: bool, loopy: bool) -> Self {
         Simulation {
-            size,
-            particles,
-            gravity: -0.01,
+            particles: Simulation::init_particles(),
+            gravity: gravity,
+            time_step: time_step,
+            loopx: loopx,
+            loopy: loopy,
         }
     }
 
-    pub fn add_particle(&mut self, particle: Particle) {
-        self.particles.push(particle);
-    }
+    pub fn empty_grid() -> [[&'static mut Particle; GRID_SIZE]; GRID_SIZE] {
+        let grid = [[None; GRID_SIZE]; GRID_SIZE];
 
-    pub fn update(&mut self, delta_time: f32) {
-        for particle in self.particles.iter_mut() {
-            particle.position.0 += particle.velocity.0 * delta_time;
-            particle.position.1 += particle.velocity.1 * delta_time;
-            particle.velocity.0 *= 0.99;
-            particle.velocity.1 *= 0.99;
-
-            particle.velocity.1 += self.gravity * delta_time;
-
-            if particle.position.0 < -1.0 {
-                particle.position.0 = -1.0;
-                particle.velocity.0 *= -1.0;
-            } else if particle.position.0 > 1.0 {
-                particle.position.0 = 1.0;
-                particle.velocity.0 *= -1.0;
-            }
-
-            if particle.position.1 < -1.0 {
-                particle.position.1 = -1.0;
-                particle.velocity.1 *= -1.0;
-            } else if particle.position.1 > 1.0 {
-                particle.position.1 = 1.0;
-                particle.velocity.1 *= -1.0;
+        for i in 0..GRID_SIZE {
+            for j in 0..GRID_SIZE {
+                grid[i][j] = &mut Particle::new(GRID_SIZE as u32);
             }
         }
+        grid
+    }
+   
+    pub fn init_particles() -> [[&'static mut Particle; GRID_SIZE]; GRID_SIZE] {
+        let mut counter = 0;
+        let mut vec_particles: Vec<Vec<Particle>> = Vec::new();
+        let mut particles = Simulation::empty_grid();
+        
+        let mut vec_particles: Vec<Vec<Particle>> = Vec::new();
+        
+        for i in 0..GRID_SIZE {
+            for j in 0..GRID_SIZE {
+                let mut part = Particle::new(GRID_SIZE as u32);
+                part.init_part(counter);
+                vec_particles[i].push(part);
+                counter += 1;
+            }
+        }
+
+        //convert vec to array
+        //????
+
+        particles
+    }
+
+    pub fn get_positions(&self) -> Vec<f32> {
+        let mut positions: Vec<f32> = Vec::new();
+        for i in 0..GRID_SIZE {
+            for j in 0..GRID_SIZE {
+                positions.push(self.particles[i][j].position.0 as f32);
+                positions.push(self.particles[i][j].position.1 as f32);
+                positions.push(0.0);
+            }
+        }
+        positions
     }
 }
 
@@ -128,8 +136,6 @@ impl Component for App {
     type Message = ();
     type Properties = ();
 
-    
-
     fn create(_ctx: &Context<Self>) -> Self {
         App {
             node_ref: NodeRef::default(),
@@ -140,7 +146,6 @@ impl Component for App {
     }
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
-
         let onclick = Callback::from(|e: MouseEvent| {
             let x = e.client_x();
             let y = e.client_y();
@@ -157,34 +162,46 @@ impl Component for App {
         }
 
         let canvas = self.node_ref.cast::<HtmlCanvasElement>().unwrap();
-        let gl: GL = canvas
-            .get_context("webgl")
-            .unwrap()
-            .unwrap()
-            .dyn_into()
-            .unwrap();
+        let gl: GL = canvas.get_context("webgl").unwrap().unwrap().dyn_into().unwrap();
         Self::render_gl(self, gl);
     }
 }
 
+fn setup_gl(gl: &GL) {
+    let vert_code = include_str!("./basic.vert");
+    //let frag_code = include_str!("./basic.frag");
+
+    let vert_shader = gl.create_shader(GL::VERTEX_SHADER).unwrap();
+    gl.shader_source(&vert_shader, vert_code);
+    gl.compile_shader(&vert_shader);
+
+    //let frag_shader = gl.create_shader(GL::FRAGMENT_SHADER).unwrap();
+    //gl.shader_source(&frag_shader, frag_code);
+    //gl.compile_shader(&frag_shader);
+
+    let shader_program = gl.create_program().unwrap();
+    gl.attach_shader(&shader_program, &vert_shader);
+    //gl.attach_shader(&shader_program, &frag_shader);
+    gl.link_program(&shader_program);
+    gl.use_program(Some(&shader_program));
+
+    let position_attrib = gl.get_attrib_location(&shader_program, "position") as u32;
+    gl.vertex_attrib_pointer_with_i32(position_attrib, 3, GL::FLOAT, false, 0, 0);
+    gl.enable_vertex_attrib_array(position_attrib);
+}
+
 impl App {
     fn request_animation_frame(f: &Closure<dyn FnMut()>) {
-        window()
-            .unwrap()
-            .request_animation_frame(f.as_ref().unchecked_ref())
-            .unwrap();
+        window().unwrap().request_animation_frame(f.as_ref().unchecked_ref()).unwrap();
     }
 
     fn render_gl(&mut self, gl: GL) {
         let mut timestamp = 0.0;
         // create a simulation that can be passed to the render function
-        let mut simulation = Simulation::new((900, 600));
+        let mut simulation = Simulation::new(0.0, 0, false, false);
         // get the position list from the simulation
-        let positions: Vec<f32> = simulation
-            .particles
-            .iter()
-            .flat_map(|p| vec![p.position.0, p.position.1])
-            .collect();
+        let positions: Vec<f32> = simulation.get_positions();
+        log::info!("positions: {:?}", positions);
 
         let vert_code = include_str!("./basic.vert");
         let frag_code = include_str!("./basic.frag");
@@ -229,40 +246,40 @@ impl App {
 
         let cb = Rc::new(RefCell::new(None));
 
-        *cb.borrow_mut() = Some(Closure::wrap(Box::new({
-            let cb = cb.clone();
-            move || {
-                // This should repeat every frame
-                timestamp += 20.0;
-                gl.uniform1f(time.as_ref(), timestamp as f32);
+        *cb.borrow_mut() = Some(
+            Closure::wrap(
+                Box::new({
+                    let cb = cb.clone();
+                    move || {
+                        // This should repeat every frame
+                        timestamp += 20.0;
+                        gl.uniform1f(time.as_ref(), timestamp as f32);
 
-                // Update the simulation
-                simulation.update(0.1);
+                        // Update the simulation
+                        // Get the new positions
+                        let positions = simulation.get_positions();
+                        // Update the vertex buffer
+                        let verts = js_sys::Float32Array::from(positions.as_slice());
+                        gl.bind_buffer(GL::ARRAY_BUFFER, Some(&vertex_buffer));
+                        gl.buffer_data_with_array_buffer_view(
+                            GL::ARRAY_BUFFER,
+                            &verts,
+                            GL::STATIC_DRAW
+                        );
 
-                // Get the new positions
-                let positions: Vec<f32> = simulation
-                    .particles
-                    .iter()
-                    .flat_map(|p| vec![p.position.0, p.position.1])
-                    .collect();
-
-                // Update the vertex buffer
-                let verts = js_sys::Float32Array::from(positions.as_slice());
-                gl.bind_buffer(GL::ARRAY_BUFFER, Some(&vertex_buffer));
-                gl.buffer_data_with_array_buffer_view(GL::ARRAY_BUFFER, &verts, GL::STATIC_DRAW);
-
-                // Draw the new frame
-                gl.draw_arrays(GL::POINTS, 0, 6);
-                App::request_animation_frame(cb.borrow().as_ref().unwrap());
-            }
-        }) as Box<dyn FnMut()>));
+                        // Draw the new frame
+                        gl.draw_arrays(GL::POINTS, 0, 6);
+                        App::request_animation_frame(cb.borrow().as_ref().unwrap());
+                    }
+                }) as Box<dyn FnMut()>
+            )
+        );
 
         App::request_animation_frame(cb.borrow().as_ref().unwrap());
-        
     }
 }
 
 fn main() {
-    wasm_logger::init(wasm_logger::Config::default());  
+    wasm_logger::init(wasm_logger::Config::default());
     yew::Renderer::<App>::new().render();
 }
