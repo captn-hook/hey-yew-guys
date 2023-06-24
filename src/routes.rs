@@ -7,6 +7,7 @@ use crate::page_components::home::Home;
 use crate::page_components::post::Post;
 //use crate::page_components::misc::MiscProps;
 use crate::page_components::misc::Misc;
+use crate::page_components::not_found::NotFound;
 
 
 //this controls access to the routes
@@ -29,7 +30,7 @@ pub fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
         Route::Secure => html! { <Secure /> },
-        Route::NotFound => html! { <p>{ "404" }</p> },
+        Route::NotFound => html! { <NotFound /> },
         Route::Post { id } => html! { <Post id={id} /> },
         Route::Misc { path } => html! { <Misc path={path} /> },
     }

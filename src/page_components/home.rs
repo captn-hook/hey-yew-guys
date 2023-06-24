@@ -68,7 +68,8 @@ pub fn path_select() -> Html {
 #[styled_component(Home)]
 pub fn home() -> Html {
     html! {
-        <div class={foreground()}>
+        //round corners
+        <div class={foreground()} style="border-radius: 25px;">
             <h1>{ "Home" }</h1>
             < SecureBT />
             < NotFoundBT />

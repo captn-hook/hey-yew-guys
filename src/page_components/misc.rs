@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
-
+use stylist::yew::styled_component;
 //use routes
 use crate::routes::*;
 
@@ -9,7 +9,7 @@ pub struct MiscProps {
     pub path: String,
 }
 
-#[function_component(Misc)]
+#[styled_component(Misc)]
 pub fn misc(props: &MiscProps) -> Html {
     let navigator = use_navigator().unwrap();
 
