@@ -2,7 +2,9 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 use wasm_bindgen::JsCast;
 
-//use routes
+use stylist::yew::styled_component;
+
+use crate::theme::foreground;
 use crate::routes::*;
 
 #[function_component(SecureBT)]
@@ -63,12 +65,10 @@ pub fn path_select() -> Html {
     }
 }
 
-#[function_component(Home)]
+#[styled_component(Home)]
 pub fn home() -> Html {
-    let navigator = use_navigator().unwrap();
-    
     html! {
-        <div>
+        <div class={foreground()}>
             <h1>{ "Home" }</h1>
             < SecureBT />
             < NotFoundBT />

@@ -29,7 +29,7 @@ pub fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
         Route::Secure => html! { <Secure /> },
-        Route::NotFound => html! { <p>{ "404 - Not Found" }</p> },
+        Route::NotFound => html! { <p>{ "404" }</p> },
         Route::Post { id } => html! { <Post id={id} /> },
         Route::Misc { path } => html! { <Misc path={path} /> },
     }
