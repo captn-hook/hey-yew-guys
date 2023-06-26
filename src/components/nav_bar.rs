@@ -25,10 +25,10 @@ pub fn nav_bar() -> Html {
 
                 <button class="dropbtn">{ "Dropdown" }</button>
                 <div class="dropdown-content">
-                    <a href="#">{ "Link 1" }</a>
-                    <a href="#">{ "Link 2" }</a>
-                    <a href="#">{ "Link 3" }</a>
-                    <a href="#">{ "Link 4" }</a>
+                    <a href="#">{ "Link B 1" }</a>
+                    <a href="#">{ "Link B 2" }</a>
+                    <a href="#">{ "Link B 3" }</a>
+                    <a href="#">{ "Link B 4" }</a>
                 </div>
             </div>
         </div>
