@@ -8,12 +8,13 @@ use crate::routes::*;
 
 #[styled_component(NavBar)]
 pub fn nav_bar() -> Html {
-    let navigator = use_navigator().unwrap();
-    let onclick = Callback::from(move |_| navigator.push(&Route::Home));
-
     html! {
         <div class="navbar">
-            <button {onclick}>{ "Go Home" }</button>
+            <Link<Route> to={Route::Home}>{ "Home" }</Link<Route>>
+            <Link<Route> to={Route::About}>{ "About" }</Link<Route>>
+            <Link<Route> to={Route::Contact}>{ "Contact" }</Link<Route>>
+            <Link<Route> to={Route::Projects}>{ "Projects" }</Link<Route>>
+            <Link<Route> to={Route::Sand}>{ "Sand" }</Link<Route>>
         </div>
     }
 }

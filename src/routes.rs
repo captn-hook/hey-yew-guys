@@ -1,27 +1,30 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::page_components::secure::Secure;
+use crate::page_components::about::About;
 use crate::page_components::home::Home;
-//use crate::page_components::post::PostProps;
-use crate::page_components::post::Post;
-//use crate::page_components::misc::MiscProps;
-use crate::page_components::misc::Misc;
+use crate::page_components::contact::Contact;
+//use crate::page_components::misc::Misc;
 use crate::page_components::not_found::NotFound;
-
+use crate::page_components::projects::Projects;
+use crate::page_components::sand::sand::Sand;
 
 //this controls access to the routes
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
     #[at("/")]
     Home,
-    #[at("/secure")]
-    Secure,
+    #[at("/sand")]
+    Sand,
     #[not_found]
     #[at("/404")]
     NotFound,
-    #[at("/post/:id")]
-    Post { id: String },
+    #[at("/about")]
+    About,
+    #[at("/contact")]
+    Contact,
+    #[at("/projects")]
+    Projects,
     #[at("/*path")]
     Misc { path: String },
 }
@@ -29,9 +32,11 @@ pub enum Route {
 pub fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
-        Route::Secure => html! { <Secure /> },
+        Route::About => html! { <About /> },
         Route::NotFound => html! { <NotFound /> },
-        Route::Post { id } => html! { <Post id={id} /> },
-        Route::Misc { path } => html! { <Misc path={path} /> },
+        Route::Contact => html! { <Contact /> },
+        Route::Projects => html! { <Projects /> },
+        Route::Sand => html! { <Sand /> },
+        Route::Misc { path } => html! { <NotFound /> },
     }
 }
