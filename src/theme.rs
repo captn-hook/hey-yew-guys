@@ -21,6 +21,9 @@ pub fn light_theme() -> Theme {
 
     let css = css!(r#"
         html, body {
+
+        }
+        .page {
             font-family: sans-serif;
             padding: 1rem;
             margin: 1rem;
@@ -63,6 +66,87 @@ pub fn light_theme() -> Theme {
             background-color: ${light_accent_color};
             color: ${ft_color};
         }
+
+        /* dropdown styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: ${bg};
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            border: ${default_border}px solid ${accent_color};
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: ${ft_color};
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: ${accent_color};
+            color: ${bg};
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: ${accent_color};
+            color: ${bg};
+        }
+
+        /* navbar styles */
+
+        .navbar {
+            overflow: hidden;
+            background-color: ${bg};
+            position: fixed;
+            top: 0;
+            width: 100%;
+            border: ${default_border}px solid ${accent_color};
+        }
+
+        .nav_bar_styled {
+            overflow: hidden;
+            background-color: ${bg};
+            position: fixed;
+            top: 0;
+            width: 100%;
+            border: ${default_border}px solid ${accent_color};
+        }
+
+        .navbar a {
+            float: left;
+            display: block;
+            color: ${ft_color};
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        .navbar a:hover {
+            background-color: ${accent_color};
+            color: ${bg};
+        }
+
+        .navbar a.active {
+            background-color: ${accent_color};
+            color: ${bg};
+        }
+
+        .navbar .icon {
+            display: none;
+        }
+        
     "#,
     bg = background_color, ft_color = font_color, default_border = default_border, accent_color = accent_color, light_accent_color = light_accent_color);
     

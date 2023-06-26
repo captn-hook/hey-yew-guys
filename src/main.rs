@@ -8,6 +8,9 @@ use routes::*;
 
 mod page_components;
 
+mod components;
+use crate::components::nav_bar::NavBar;
+
 mod theme;
 use theme::light_theme;
 
@@ -16,12 +19,16 @@ use theme::light_theme;
 fn app() -> Html {
     let theme = light_theme();
     html! {
-        // Global Styles can be applied with <Global /> component.
-        <BrowserRouter>
+        //all elements must have a single root element in yew::html()!
+        <>
+            // Global Styles can be applied with <Global /> component.
             <Global css={theme.css}/>
-            <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
-          
-        </BrowserRouter>
+         
+            <BrowserRouter>
+                <NavBar />
+                <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
+            </BrowserRouter>
+        </>
     }
 }
 //starts app
