@@ -21,12 +21,15 @@ pub fn light_theme() -> Theme {
 
     let css = css!(r#"
         html, body {
-
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
         }
+
         .page {
             font-family: sans-serif;
             padding: 1rem;
-            margin: 1rem;
             display: flex;
             justify-content: center;
             align-items: center;

@@ -26,7 +26,9 @@ fn app() -> Html {
          
             <BrowserRouter>
                 <NavBar />
-                <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
+                <div class="page">
+                    <Switch<Route> render={switch} /> // <- must be child of <BrowserRouter>
+                </div>
             </BrowserRouter>
         </>
     }
