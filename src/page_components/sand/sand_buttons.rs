@@ -9,8 +9,12 @@ use crate::routes::*;
 #[styled_component(SandButtons)]
 pub fn sand_buttons() -> Html {
     html! {
-        <div class="navbar">
-            <Link<Route> to={Route::Home}>{ "Home" }</Link<Route>>
+        <div class="sand-buttons">
+            <button class="sand-button">{ "🚀" }</button>
+            <button class="sand-button">{ "🌕" }</button>
+            <button class="sand-button">{ "🌎" }</button>
+            <button class="sand-button">{ "🌙" }</button>
+            <button class="sand-button">{ "🌞" }</button>            
         </div>
     }
 }

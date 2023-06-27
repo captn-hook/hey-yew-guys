@@ -149,6 +149,50 @@ pub fn light_theme() -> Theme {
         .navbar .icon {
             display: none;
         }
+
+        /* sand styles */
+        /* second navbar */
+        .sand-buttons {
+            overflow: hidden;
+            background-color: ${bg};
+            top: 0;
+            width: 100%;
+            border: ${default_border}px solid ${accent_color};
+        }
+
+        .sand-button {
+            float: left;
+            display: block;
+            color: ${ft_color};
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        .sand-button:hover {
+            background-color: ${accent_color};
+            color: ${bg};
+        }
+
+        .sand-button.active {
+            background-color: ${accent_color};
+            color: ${bg};
+        }
+
+        .sand-button .icon {
+            display: none;
+        }
+
+        .viewer {
+            background-color: ${bg};
+            color: ${ft_color};
+            border: ${default_border}px solid ${accent_color};
+            border-radius: 5px;
+            padding: 5px;
+            margin: 5px;
+            width: 80%;
+            height: 80%;
+        }
         
     "#,
     bg = background_color, ft_color = font_color, default_border = default_border, accent_color = accent_color, light_accent_color = light_accent_color);
