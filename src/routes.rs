@@ -7,7 +7,7 @@ use crate::page_components::contact::Contact;
 //use crate::page_components::misc::Misc;
 use crate::page_components::not_found::NotFound;
 use crate::page_components::projects::Projects;
-use crate::page_components::sand::sand::Sand;
+use crate::page_components::sand::sand::SandWindow;
 
 //this controls access to the routes
 #[derive(Clone, Routable, PartialEq)]
@@ -36,7 +36,7 @@ pub fn switch(routes: Route) -> Html {
         Route::NotFound => html! { <NotFound /> },
         Route::Contact => html! { <Contact /> },
         Route::Projects => html! { <Projects /> },
-        Route::Sand => html! { <Sand /> },
-        Route::Misc { path } => html! { <NotFound /> },
+        Route::Sand => html! { <SandWindow /> },
+        Route::Misc { path: _ } => html! { <NotFound /> },
     }
 }

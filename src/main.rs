@@ -14,6 +14,8 @@ use crate::components::nav_bar::NavBar;
 mod theme;
 use theme::light_theme;
 
+use log::info;
+
 //main app
 #[styled_component(App)]
 fn app() -> Html {
@@ -35,5 +37,8 @@ fn app() -> Html {
 }
 //starts app
 fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
+
+    info!("Starting app");
     yew::Renderer::<App>::new().render();
 }
