@@ -33,7 +33,7 @@ impl Component for SandWindow {
     fn view(&self, _ctx: &Context<Self>) -> Html {
         //create a canvas element from the reference
         html! {
-            <canvas ref={self.node_ref.clone()} />
+            <canvas style="border: 2px solid black; width: 80%; height: 80%;" ref={self.node_ref.clone()} />
         }
     }
 

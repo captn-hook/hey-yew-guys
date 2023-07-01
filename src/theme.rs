@@ -29,11 +29,10 @@ pub fn light_theme() -> Theme {
 
         .page {
             font-family: sans-serif;
-            padding: 1rem;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            min-height: 100%;
             flex-direction: column;
             background-color: ${bg};
             color: ${ft_color};    
