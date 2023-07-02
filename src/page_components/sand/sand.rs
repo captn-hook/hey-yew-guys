@@ -1,7 +1,7 @@
 
 use web_sys::console::info;
 use yew::prelude::*;
-
+//use yew::virtual_dom::ListenerKind::onclick;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -11,11 +11,6 @@ use web_sys::{window, HtmlCanvasElement, WebGl2RenderingContext as GL, WebGl2Ren
 
 use log::info;
 //use yew::{html, Component, Context, Html, NodeRef};
-
-pub struct ClickPoint {
-    pub x: i32,
-    pub y: i32,
-}
 
 pub struct Particle {
     pub x: i32,
@@ -107,7 +102,7 @@ pub struct SandWindow {
 
 impl Component for SandWindow {
     //required by yew
-    type Message = ();
+    type Message = Msg;
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
@@ -126,12 +121,21 @@ impl Component for SandWindow {
     }
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
-        //click listener returns coordinates of click
-        let onclick = Callback::from(move |e: MouseEvent| {
-            info!("mouse click at ({}, {})", e.client_x(), e.client_y());
-            //store the click in the game
-            
-            
+        let onclick = _ctx.link().callback(|e: MouseEvent| {
+            //info!("click lsitener");
+            //get the position of the click
+            let x = e.client_x();
+            let y = e.client_y();
+            //get the type of click
+            let clic_type = ClicType::Sand;
+            //create a click object
+            let click = Click {
+                x: x,
+                y: y,
+                clic_type: clic_type,
+            };
+            //send the click message
+            Msg::Click(click)
         });
         //create a canvas element from the reference
         html! {
@@ -139,11 +143,19 @@ impl Component for SandWindow {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         //update the game
         self.game.borrow_mut().update();
-      
-        true
+        
+        match msg {
+            Msg::Click(click) => {
+                info!("click message {} {}", click.x, click.y);
+                //reset time
+                
+                self.game.borrow_mut().clicks.push(click);
+                true
+            }
+        }
     }
 
     fn rendered(&mut self, _ctx: &Context<Self>, first_render: bool) {
