@@ -1,4 +1,5 @@
 
+use web_sys::console::info;
 use yew::prelude::*;
 
 use std::cell::RefCell;
@@ -6,16 +7,102 @@ use std::rc::Rc;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{window, HtmlCanvasElement, WebGl2RenderingContext as GL, WebGl2RenderingContext};
+use web_sys::{window, HtmlCanvasElement, WebGl2RenderingContext as GL, WebGl2RenderingContext, WebGlUniformLocation};
 
 use log::info;
 //use yew::{html, Component, Context, Html, NodeRef};
+
+pub struct ClickPoint {
+    pub x: i32,
+    pub y: i32,
+}
+
+pub struct Particle {
+    pub x: i32,
+    pub y: i32,
+    pub vx: i32,
+    pub vy: i32,
+    pub color: String,
+}
+
+pub enum ClicType {
+    Sand,
+    Water,
+    Wall,
+}
+
+pub struct Click {
+    pub x: i32,
+    pub y: i32,
+    pub clic_type: ClicType,
+}
+
+pub enum Msg {
+    //this is the message that is sent when the user clicks on the canvas
+    Click(Click),
+}
+
+pub struct SandGame {
+    pub width: i32,
+    pub height: i32,
+    pub particles: Vec<Particle>,
+    pub clicks: Vec<Click>,
+}
+
+impl SandGame {
+    pub fn update(&mut self) {
+        //update the particles
+        for particle in self.particles.iter_mut() {
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            particle.vy += 1;
+        }
+        //update the clicks
+        for click in self.clicks.iter_mut() {
+            match click.clic_type {
+                ClicType::Sand => {
+                    self.particles.push(Particle {
+                        x: click.x,
+                        y: click.y,
+                        vx: 0,
+                        vy: 0,
+                        color: String::from("yellow"),
+                    });
+                }
+                ClicType::Water => {
+                    self.particles.push(Particle {
+                        x: click.x,
+                        y: click.y,
+                        vx: 0,
+                        vy: 0,
+                        color: String::from("blue"),
+                    });
+                }
+                ClicType::Wall => {
+                    self.particles.push(Particle {
+                        x: click.x,
+                        y: click.y,
+                        vx: 0,
+                        vy: 0,
+                        color: String::from("black"),
+                    });
+                }
+            }
+        }
+        //clear the clicks
+        self.clicks.clear();
+    }
+}
+
 
 // Wrap gl in Rc (Arc for multi-threaded) so it can be injected into the render-loop closure.
 pub struct SandWindow {
     //node_ref is a reference to the canvas element
     node_ref: NodeRef,
-    //size is the size of the canvas element
+    //optional refrences filled on render
+    time: Option<WebGlUniformLocation>,
+    //shared ref to the sandgame, which stores the states of the particles
+    game: Rc<RefCell<SandGame>>,
 }
 
 impl Component for SandWindow {
@@ -27,14 +114,36 @@ impl Component for SandWindow {
         //create a reference for canvas element
         Self {
             node_ref: NodeRef::default(),
+            //empty for now
+            time: None,
+            game: Rc::new(RefCell::new(SandGame {
+                width: 800,
+                height: 500,
+                particles: Vec::new(),
+                clicks: Vec::new(),
+            })),
         }
     }
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
+        //click listener returns coordinates of click
+        let onclick = Callback::from(move |e: MouseEvent| {
+            info!("mouse click at ({}, {})", e.client_x(), e.client_y());
+            //store the click in the game
+            
+            
+        });
         //create a canvas element from the reference
         html! {
-            <canvas class="sandwindow" style="border: 2px solid black;" width="800" height="500" ref={self.node_ref.clone()} />
+            <canvas class="sandwindow" style="border: 2px solid black;" width="800" height="500" ref={self.node_ref.clone()} onclick={onclick}></canvas>
         }
+    }
+
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        //update the game
+        self.game.borrow_mut().update();
+      
+        true
     }
 
     fn rendered(&mut self, _ctx: &Context<Self>, first_render: bool) {
@@ -60,7 +169,7 @@ impl Component for SandWindow {
             .dyn_into::<WebGl2RenderingContext>()
             .unwrap();
 
-        Self::render_gl(gl);
+        Self::render_gl(self, gl);
     }
 }
 
@@ -72,7 +181,7 @@ impl SandWindow {
             .expect("should register `requestAnimationFrame` OK");
     }
 
-    fn render_gl(gl: WebGl2RenderingContext) {
+    fn render_gl(&mut self, gl: WebGl2RenderingContext) {
         // This should log only once -- not once per frame
         info!("render_gl");
         let mut timestamp = 0.0;
@@ -120,8 +229,9 @@ impl SandWindow {
         // wrapping logic running every frame, unnecessary cost.
         // Here constructing the wrapped closure just once.
 
+        self.time = time.as_ref().cloned();
         let cb = Rc::new(RefCell::new(None));
-
+        //game loop
         *cb.borrow_mut() = Some(Closure::wrap(Box::new({
             let cb = cb.clone();
             move || {
@@ -132,7 +242,8 @@ impl SandWindow {
                 SandWindow::request_animation_frame(cb.borrow().as_ref().unwrap());
             }
         }) as Box<dyn FnMut()>));
-
+        //click handler 
+    
         SandWindow::request_animation_frame(cb.borrow().as_ref().unwrap());
     }
 }
