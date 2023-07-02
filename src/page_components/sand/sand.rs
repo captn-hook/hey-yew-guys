@@ -33,7 +33,7 @@ impl Component for SandWindow {
     fn view(&self, _ctx: &Context<Self>) -> Html {
         //create a canvas element from the reference
         html! {
-            <canvas style="border: 2px solid black; width: 80%; height: 80%;" ref={self.node_ref.clone()} />
+            <canvas style="border: 2px solid black;" width="800" height="500" ref={self.node_ref.clone()} />
         }
     }
 
@@ -74,7 +74,7 @@ impl SandWindow {
 
     fn render_gl(gl: WebGl2RenderingContext) {
         // This should log only once -- not once per frame
-
+        info!("render_gl");
         let mut timestamp = 0.0;
 
         let vert_code = include_str!("./basic.vert");
