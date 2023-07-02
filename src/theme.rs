@@ -37,6 +37,13 @@ pub fn light_theme() -> Theme {
             background-color: ${bg};
             color: ${ft_color};    
         }
+        
+        .sandwindow {
+            /* canvas should be the same size as the window */
+            width: 90%;
+            height: 90%;
+            align-self: center;
+        }
 
         /* button styles */
         button {
@@ -109,6 +116,7 @@ pub fn light_theme() -> Theme {
         /* navbar styles */
 
         .navbar {
+            z-index: 999;
             overflow: hidden;
             background-color: ${bg};
             position: fixed;
@@ -118,6 +126,7 @@ pub fn light_theme() -> Theme {
         }
 
         .nav_bar_styled {
+            z-index: 999;
             overflow: hidden;
             background-color: ${bg};
             position: fixed;
