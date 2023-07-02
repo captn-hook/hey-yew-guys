@@ -94,10 +94,10 @@ impl SandGame {
 pub struct SandWindow {
     //node_ref is a reference to the canvas element
     node_ref: NodeRef,
-    //optional refrences filled on render
-    time: Option<WebGlUniformLocation>,
+    cb: Rc<RefCell<Option<Closure<dyn FnMut()>>>>,
     //shared ref to the sandgame, which stores the states of the particles
     game: Rc<RefCell<SandGame>>,
+    refrence_time: Rc<RefCell<f64>>,
 }
 
 impl Component for SandWindow {
@@ -109,14 +109,14 @@ impl Component for SandWindow {
         //create a reference for canvas element
         Self {
             node_ref: NodeRef::default(),
-            //empty for now
-            time: None,
+            cb: Rc::new(RefCell::new(None)),
             game: Rc::new(RefCell::new(SandGame {
                 width: 800,
                 height: 500,
                 particles: Vec::new(),
                 clicks: Vec::new(),
             })),
+            refrence_time: Rc::new(RefCell::new(0.0)),
         }
     }
 
@@ -150,8 +150,10 @@ impl Component for SandWindow {
         match msg {
             Msg::Click(click) => {
                 info!("click message {} {}", click.x, click.y);
-                //reset time
-                
+                info!("refrence time {}", self.refrence_time.borrow());
+                //set to zero the refrence time
+                *self.refrence_time.borrow_mut() = 0.0;
+                info!("refrence time {}", self.refrence_time.borrow());
                 self.game.borrow_mut().clicks.push(click);
                 true
             }
@@ -195,9 +197,9 @@ impl SandWindow {
 
     fn render_gl(&mut self, gl: WebGl2RenderingContext) {
         // This should log only once -- not once per frame
-        info!("render_gl");
+       
         let mut timestamp = 0.0;
-
+       
         let vert_code = include_str!("./basic.vert");
         let frag_code = include_str!("./basic.frag");
 
@@ -241,14 +243,17 @@ impl SandWindow {
         // wrapping logic running every frame, unnecessary cost.
         // Here constructing the wrapped closure just once.
 
-        self.time = time.as_ref().cloned();
-        let cb = Rc::new(RefCell::new(None));
+        //self.cb = Rc::new(RefCell::new(None));
         //game loop
-        *cb.borrow_mut() = Some(Closure::wrap(Box::new({
-            let cb = cb.clone();
+        *self.cb.borrow_mut() = Some(Closure::wrap(Box::new({
+            let cb = self.cb.clone();
+            let refrence_time = self.refrence_time.clone();
             move || {
                 // This should repeat every frame
-                timestamp += 20.0;
+                //timestamp += 20.0;
+                *refrence_time.borrow_mut() += 20.0;
+                timestamp = refrence_time.borrow().clone();
+                //info!("timestamp {}", timestamp);
                 gl.uniform1f(time.as_ref(), timestamp as f32);
                 gl.draw_arrays(GL::TRIANGLES, 0, 6);
                 SandWindow::request_animation_frame(cb.borrow().as_ref().unwrap());
@@ -256,6 +261,6 @@ impl SandWindow {
         }) as Box<dyn FnMut()>));
         //click handler 
     
-        SandWindow::request_animation_frame(cb.borrow().as_ref().unwrap());
+        SandWindow::request_animation_frame(self.cb.borrow().as_ref().unwrap());
     }
 }
