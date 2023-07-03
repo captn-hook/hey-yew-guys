@@ -197,18 +197,34 @@ impl SandWindow {
 
     fn render_gl(&mut self, gl: WebGl2RenderingContext) {
         // This should log only once -- not once per frame
-       
+        
         let mut timestamp = 0.0;
        
         let vert_code = include_str!("./basic.vert");
         let frag_code = include_str!("./basic.frag");
 
-        // This list of vertices will draw two triangles to cover the entire canvas.
-        let vertices: Vec<f32> = vec![
+        // This list of vertices will draw two triangles to cover the entire canvas, we will scale it and place it for each particle
+        let vertex: [f32; 12] = [
             -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
         ];
+
+        let count = self.game.borrow().particles.len() as i32 * 6;
+        let size = 2;
+        
+        let vertices = vec![vertex; self.game.borrow().particles.len()];
+
+        fn cv(v: &Vec<[f32; 12]>) -> [f32; 72] {
+            let mut res = [0.0; 72];
+            for (i, x) in v.iter().enumerate() {
+                for (j, y) in x.iter().enumerate() {
+                    res[i * 12 + j] = *y;
+                }
+            }
+            res
+        }   
+
         let vertex_buffer = gl.create_buffer().unwrap();
-        let verts = js_sys::Float32Array::from(vertices.as_slice());
+        let verts = js_sys::Float32Array::from(&cv(&vertices)[..]);
 
         gl.bind_buffer(GL::ARRAY_BUFFER, Some(&vertex_buffer));
         gl.buffer_data_with_array_buffer_view(GL::ARRAY_BUFFER, &verts, GL::STATIC_DRAW);
@@ -230,14 +246,14 @@ impl SandWindow {
 
         // Attach the position vector as an attribute for the GL context.
         let position = gl.get_attrib_location(&shader_program, "a_position") as u32;
-        gl.vertex_attrib_pointer_with_i32(position, 2, GL::FLOAT, false, 0, 0);
+        gl.vertex_attrib_pointer_with_i32(position, size, GL::FLOAT, false, 0, 0);
         gl.enable_vertex_attrib_array(position);
 
         // Attach the time as a uniform for the GL context.
         let time = gl.get_uniform_location(&shader_program, "u_time");
         gl.uniform1f(time.as_ref(), timestamp as f32);
 
-        gl.draw_arrays(GL::TRIANGLES, 0, 6);
+        gl.draw_arrays(GL::TRIANGLES, 0, count);
 
         // Gloo-render's request_animation_frame has this extra closure
         // wrapping logic running every frame, unnecessary cost.
@@ -255,7 +271,7 @@ impl SandWindow {
                 timestamp = refrence_time.borrow().clone();
                 //info!("timestamp {}", timestamp);
                 gl.uniform1f(time.as_ref(), timestamp as f32);
-                gl.draw_arrays(GL::TRIANGLES, 0, 6);
+                gl.draw_arrays(GL::TRIANGLES, 0, count);
                 SandWindow::request_animation_frame(cb.borrow().as_ref().unwrap());
             }
         }) as Box<dyn FnMut()>));
