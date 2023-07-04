@@ -1,3 +1,6 @@
+#[allow(unused)]
+use log::info;
+
 use yew::prelude::*;
 use yew_router::prelude::*;
 use stylist::yew::styled_component;
@@ -13,8 +16,6 @@ use crate::components::nav_bar::NavBar;
 
 mod theme;
 use theme::light_theme;
-
-use log::info;
 
 //main app
 #[styled_component(App)]

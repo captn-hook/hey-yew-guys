@@ -1,5 +1,8 @@
+#[allow(unused)]
+use log::info;
 
-use web_sys::WebGlBuffer;
+//use web_sys::WebGlBuffer;
+#[allow(unused)]
 use web_sys::console::info;
 use yew::prelude::*;
 //use yew::virtual_dom::ListenerKind::onclick;
@@ -8,23 +11,12 @@ use std::rc::Rc;
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{window, HtmlCanvasElement, WebGl2RenderingContext as GL, WebGl2RenderingContext, WebGlUniformLocation};
+use web_sys::{window, HtmlCanvasElement, WebGl2RenderingContext as GL, WebGl2RenderingContext};
 
 use super::sand_buttons::SandButtons;
 
-use log::info;
 //use yew::{html, Component, Context, Html, NodeRef};
 use crate::page_components::sand::sandgame::*;
-
-struct WebGLRenderer {
-    context: WebGl2RenderingContext,
-
-    boundary_buffer: WebGlBuffer,
-    particle_buffer: WebGlBuffer,
-    draw_mode_single_color_uniform: WebGlUniformLocation,
-    draw_mode_boundary_uniform: WebGlUniformLocation,
-    position_attrib_location: u32,
-}
 
 // Wrap gl in Rc (Arc for multi-threaded) so it can be injected into the render-loop closure.
 pub struct SandWindow {
@@ -34,9 +26,7 @@ pub struct SandWindow {
     //shared ref to the sandgame, which stores the states of the particles
     game: Rc<RefCell<SandGame>>,
     refrence_time: Rc<RefCell<f64>>,
-
-    //boundry_buffer: WebGlBuffer,
-    //particle_buffer: WebGlBuffer,
+    positions: Rc<RefCell<Vec<Pixel>>>,
 }
 
 impl Component for SandWindow {
@@ -56,6 +46,7 @@ impl Component for SandWindow {
                 clicks: Vec::new(),
             })),
             refrence_time: Rc::new(RefCell::new(0.0)),
+            positions: Rc::new(RefCell::new(Vec::new())),
         }
     }
 
@@ -88,6 +79,9 @@ impl Component for SandWindow {
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         //update the game
         self.game.borrow_mut().update();
+        let pixels = self.game.borrow().get_pixels();   
+        info!("update {:?}", pixels);
+        self.positions = Rc::new(RefCell::new(pixels));
         
         match msg {
             Msg::Click(click) => {
@@ -141,12 +135,12 @@ impl SandWindow {
         let vert_code = include_str!("./basic.vert");
         let frag_code = include_str!("./basic.frag");
 
-        // This list of vertices will draw two triangles to cover the entire canvas, we will scale it and place it for each particle
+        // This list of vertices will draw two triangles to cover the entire canvas, we will scale it and place it for each pixel
         let vertex: [f32; 12] = [
             -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
         ];
 
-        let count = self.game.borrow().particles.len() as i32 * 6;
+        let count = self.game.borrow().particles.len() as i32 * 12;
         let size = 2;
         
         let vertices = vec![vertex; self.game.borrow().particles.len()];
