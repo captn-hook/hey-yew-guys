@@ -12,15 +12,22 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 // Wrap gl in Rc (Arc for multi-threaded) so it can be injected into the render-loop closure.
-pub struct Gl_Mgr {
+pub struct GlMgr {
     //node_ref is a reference to the canvas element
     context: GLC,
-    canvas: HtmlCanvasElement,
     cb: Rc<RefCell<Option<Closure<dyn FnMut()>>>>,
     refrence_time: Rc<RefCell<f64>>,
 }
 
-impl Gl_Mgr {
+impl GlMgr {
+    pub fn new(context: GLC, cb: Rc<RefCell<Option<Closure<dyn FnMut()>>>>, refrence_time: Rc<RefCell<f64>>,) -> Self {
+        Self {
+            context,
+            cb,
+            refrence_time,
+        }
+    }
+
     fn request_animation_frame(f: &Closure<dyn FnMut()>) {
         window()
             .unwrap()
@@ -93,11 +100,11 @@ impl Gl_Mgr {
                 //info!("timestamp {}", timestamp);
                 self.context.uniform1f(time.as_ref(), timestamp as f32);
                 self.context.draw_arrays(GLC::TRIANGLES, 0, count);
-                Gl_Mgr::request_animation_frame(cb.borrow().as_ref().unwrap());
+                GlMgr::request_animation_frame(cb.borrow().as_ref().unwrap());
             }
         }) as Box<dyn FnMut()>));
         //click handler 
     
-        Gl_Mgr::request_animation_frame(self.cb.borrow().as_ref().unwrap());
+        GlMgr::request_animation_frame(self.cb.borrow().as_ref().unwrap());
     }
 }
