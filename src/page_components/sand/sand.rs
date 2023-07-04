@@ -16,6 +16,16 @@ use log::info;
 //use yew::{html, Component, Context, Html, NodeRef};
 use crate::page_components::sand::sandgame::*;
 
+struct WebGLRenderer {
+    context: WebGl2RenderingContext,
+
+    boundary_buffer: WebGlBuffer,
+    particle_buffer: WebGlBuffer,
+    draw_mode_single_color_uniform: WebGlUniformLocation,
+    draw_mode_boundary_uniform: WebGlUniformLocation,
+    position_attrib_location: u32,
+}
+
 // Wrap gl in Rc (Arc for multi-threaded) so it can be injected into the render-loop closure.
 pub struct SandWindow {
     //node_ref is a reference to the canvas element
@@ -68,7 +78,10 @@ impl Component for SandWindow {
         });
         //create a canvas element from the reference
         html! {
-            <canvas class="sandwindow" style="border: 2px solid black;" width="800" height="500" ref={self.node_ref.clone()} onclick={onclick}></canvas>
+            <div class="sandwindow">
+                <SandButtons />
+                <canvas class="viewer" style="border: 2px solid black;" width="800" height="500" ref={self.node_ref.clone()} onclick={onclick}></canvas>
+            </div>
         }
     }
 
@@ -79,10 +92,6 @@ impl Component for SandWindow {
         match msg {
             Msg::Click(click) => {
                 info!("click message {} {}", click.x, click.y);
-                info!("refrence time {}", self.refrence_time.borrow());
-                //set to zero the refrence time
-                *self.refrence_time.borrow_mut() = 0.0;
-                info!("refrence time {}", self.refrence_time.borrow());
                 self.game.borrow_mut().clicks.push(click);
                 true
             }

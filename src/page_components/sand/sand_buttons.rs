@@ -17,4 +17,4 @@ pub fn sand_buttons() -> Html {
             <button class="sand-button">{ "🌞" }</button>            
         </div>
     }
-}
+}   

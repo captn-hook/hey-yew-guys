@@ -37,13 +37,6 @@ pub fn light_theme() -> Theme {
             background-color: ${bg};
             color: ${ft_color};    
         }
-        
-        .sandwindow {
-            /* canvas should be the same size as the window */
-            width: 90%;
-            height: 90%;
-            align-self: center;
-        }
 
         /* button styles */
         button {
@@ -161,11 +154,8 @@ pub fn light_theme() -> Theme {
         /* sand styles */
         /* second navbar */
         .sand-buttons {
-            overflow: hidden;
-            background-color: ${bg};
-            top: 0;
-            width: 100%;
-            border: ${default_border}px solid ${accent_color};
+            display: flex;
+            justify-content: left;
         }
 
         .sand-button {
@@ -192,14 +182,18 @@ pub fn light_theme() -> Theme {
         }
 
         .viewer {
-            background-color: ${bg};
-            color: ${ft_color};
-            border: ${default_border}px solid ${accent_color};
-            border-radius: 5px;
-            padding: 5px;
-            margin: 5px;
-            width: 80%;
-            height: 80%;
+            display: flex;        
+            width: 100%;
+            max-width: 100%;
+            margin: 1 auto;
+        }
+        
+        .sandwindow {
+            /* canvas should be the same size as the window */
+            display: fixed;
+            margin-top: 50px;
+            max-width: 85%;
+            max-height: 85%;
         }
         
     "#,
