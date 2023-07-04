@@ -37,6 +37,6 @@ pub fn switch(routes: Route) -> Html {
         Route::Contact => html! { <Contact /> },
         Route::Projects => html! { <Projects /> },
         Route::Sand => html! { <Sand /> },
-        Route::Misc { path } => html! { <NotFound /> },
+        Route::Misc { path: _ } => html! { <NotFound /> },
     }
 }

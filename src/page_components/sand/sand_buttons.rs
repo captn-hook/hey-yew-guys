@@ -1,10 +1,10 @@
 
 use yew::prelude::*;
-use yew_router::prelude::*;
+//use yew_router::prelude::*;
 
 use stylist::yew::styled_component;
 
-use crate::routes::*;
+//use crate::routes::*;
 
 #[styled_component(SandButtons)]
 pub fn sand_buttons() -> Html {
