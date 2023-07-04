@@ -29,14 +29,20 @@ pub fn light_theme() -> Theme {
 
         .page {
             font-family: sans-serif;
-            padding: 1rem;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            min-height: 100%;
             flex-direction: column;
             background-color: ${bg};
             color: ${ft_color};    
+        }
+        
+        .sandwindow {
+            /* canvas should be the same size as the window */
+            width: 90%;
+            height: 90%;
+            align-self: center;
         }
 
         /* button styles */
@@ -110,6 +116,7 @@ pub fn light_theme() -> Theme {
         /* navbar styles */
 
         .navbar {
+            z-index: 999;
             overflow: hidden;
             background-color: ${bg};
             position: fixed;
@@ -119,6 +126,7 @@ pub fn light_theme() -> Theme {
         }
 
         .nav_bar_styled {
+            z-index: 999;
             overflow: hidden;
             background-color: ${bg};
             position: fixed;
